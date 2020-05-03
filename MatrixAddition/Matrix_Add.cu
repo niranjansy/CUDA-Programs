@@ -12,8 +12,8 @@ __global__ void Matrix_Add(int* d_A, int* d_B, int* d_Sum)
 
 int main()
 {
-    const int Rows = 500;
-    const int Cols = 500;
+    const int Rows = 4;
+    const int Cols = 4;
     const int Size = Rows * Cols * sizeof(int);
 
     int h_A[Rows][Cols], h_B[Rows][Cols], h_Sum[Rows][Cols];
@@ -47,13 +47,13 @@ int main()
 
     cout << "\nGPU time required for addition of two 500 by 500 matrices : " << (double)(end - start) << endl;
     
-    /*
+    
     for(int i=0; i<Rows; i++)
     {
         for(int j=0; j<Cols; j++)
             cout << h_Sum[i][j] << "\t";
         cout << endl;
-    }*/
+    }
 
     cudaFree(d_A);
     cudaFree(d_B);

@@ -30,28 +30,44 @@ __global__ void Array_Add(float* d_out, float* d_array, float Size)
 
 float Find_Sum_GPU(float h_array[], int Size)
 {
+    clock_t start, end;
+
+    int sub_size = (int)ceil(Size*1.0/1024);
+    // The resultant number of blocks obtained on dividing the array into blocks of 1024 elements
+    int final_size = (int)ceil(sub_size*1.0/1024);
+    // The resultant number of blocks obtained on dividing the array into blocks of 2^20 elements
 
     float* d_array, *d_out, *d_sum;
 
     cudaMalloc((void**)&d_array, Size*sizeof(float));
-    cudaMalloc((void**)&d_out, ceil(Size*1.0/1024)*sizeof(float));
-    cudaMalloc((void**)&d_sum, sizeof(float));
+    cudaMalloc((void**)&d_out, sub_size*sizeof(float));
+    cudaMalloc((void**)&d_sum, final_size*sizeof(float));
 
     cudaMemcpy(d_array, h_array, sizeof(float) * Size, cudaMemcpyHostToDevice);
 
-    float h_sum;
+    float *h_sum;
+    h_sum = (float*)malloc(final_size * sizeof(float)); 
+
+    start = clock();
 
     Array_Add <<<ceil(Size*1.0/1024), 1024, 1024*sizeof(float)>>> (d_out, d_array, Size);
 
-    Array_Add <<<1, 1024, 1024*sizeof(float)>>> (d_sum, d_out, ceil(Size*1.0/1024));
+    Array_Add <<<final_size, 1024, 1024*sizeof(float)>>> (d_sum, d_out, ceil(Size*1.0/1024));
 
-    cudaMemcpy(&h_sum, d_sum, sizeof(float), cudaMemcpyDeviceToHost);
+    end = clock();
+
+    cudaMemcpy(h_sum, d_sum, final_size*sizeof(float), cudaMemcpyDeviceToHost);
+    float sum = h_sum[0];
+    for(int i=1; i<final_size; i++)
+        sum += h_sum[i];
+
+    cout << "\nThe time taken by GPU is " << (double)(end-start) << " microseconds\n";
 
     cudaFree(d_array);
     cudaFree(d_out);
     cudaFree(d_sum);
 
-    return h_sum;
+    return sum;
 }
 
 __global__ void Dot_Product(float* d_A, float* d_B, float* d_Prod, int Size)

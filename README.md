@@ -1,1 +1,1 @@
-Cuda programs implemented as part of the learning phase for the project "Parallelizing FFT"
+This repository contains various CUDA parallel programs that I have learnt and implemented.
